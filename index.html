@@ -13203,7 +13203,7 @@ function renderSalida(){
         const stock = stockDisponible(p.cod);
         let stockTag = '';
         if(stock){
-          const suficiente = p.c!=null ? stock.saldo >= p.c - 0.001 : true;
+          const suficiente = st==='ok' ? true : (p.c!=null ? stock.saldo >= p.c - 0.001 : true);
           const color = suficiente ? 'var(--ok)' : 'var(--dg)';
           stockTag = `<span style="font-family:var(--mn);font-size:10px;font-weight:700;color:${color}" title="${stock.tieneBase?'':'sin stock inicial registrado'}">Stock: ${stock.saldo.toFixed(2)} ${ev(p.m||'')}${suficiente?'':' &#9888; no alcanza'}</span>`;
         }
@@ -13325,7 +13325,7 @@ function exportFaltantesXLSX(){
   toast('Exportado: '+all.length+' registros');
 }
 function exportIngresoXLSX(fecha){
-  const items = ordenarPorOCyNombre(INGRESO_DATA[fecha] || []);
+  const items = INGRESO_DATA[fecha] || [];
   if(!items.length){ toast('Sin entregas programadas ese dia'); return; }
   const header = [
     [null,'ÁREA DE ALMACÉN',null,null,null,null,null,null,null,'Código: FM - AL - 03',null],
@@ -13427,18 +13427,10 @@ function todosLosFaltantes(){
   out.sort((a,b)=> b.fecha.localeCompare(a.fecha));
   return out;
 }
-function ordenarPorOCyNombre(items){
-  return items.slice().sort((a,b)=>{
-    const ocA = parseInt((a.oc||'').match(/\d+/)?.[0] || '999999', 10);
-    const ocB = parseInt((b.oc||'').match(/\d+/)?.[0] || '999999', 10);
-    if(ocA !== ocB) return ocA - ocB;
-    return (a.nombre||'').localeCompare(b.nombre||'', 'es');
-  });
-}
 function renderIngreso(){
   const fechas = fechasConEntrega();
   if(!ING_DATE) ING_DATE = fechas.find(f=>f>=new Date().toISOString().slice(0,10)) || fechas[0];
-  const items = ordenarPorOCyNombre(INGRESO_DATA[ING_DATE] || []);
+  const items = INGRESO_DATA[ING_DATE] || [];
   let okN=0, pendN=0, sinAccionN=0;
   items.forEach(it=>{
     const e = ingEntry(ING_DATE, it.codigo);
